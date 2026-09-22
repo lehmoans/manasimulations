@@ -1,1 +1,2 @@
-complete automation of cfd using pythonic ansys fluent (pyfluent) from meshing to solving using mock (testing), local (local installation), and hpc
+The goal here is to improve my programming skills along with my simulation skills. 
+6/09: started on basic structure from chatgpt. 
