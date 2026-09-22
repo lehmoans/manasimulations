@@ -1,0 +1,192 @@
+save_dir:
+  path:
+
+geometry:
+  file: "geom.scdc"
+
+meshing:
+  show_gui: false
+  enabled: true
+
+  file: "mesh.msh" #  specify if mesh disabled
+
+  #groups set in spaceclaim
+  inlet_name: "inlet"
+  
+  outlet_name: "outlet"
+
+  enclosure:
+    {
+      enc1:
+        name: "enc1",
+        properties:
+    }
+  
+  wall_groups:
+      {
+        rot_grp:
+          name_str:"rot_group",
+        stat_grp:
+          name_str:"stat_group",
+        blade_group:
+          name_str: "blades",
+      }
+    
+
+  #local sizing
+  #face sizing:
+  local_sizing:
+    {
+      {
+        name: "facesize_blades"
+        type: "Face Size" 
+        growth_rate: 1.15
+        target_mesh_size: None
+        face_label_list: wall_groups.blade_group
+    },
+
+    }
+
+  surface_mesh:
+    {
+      {
+        growth_rate: 1.15
+        max_size:
+        min_size:
+        size_functions: "Curvature" #Curvature & Proximity, Curvature, Proximity
+        curvature_normal_angle: 0
+        cells_per_gap: 3
+        scope_proximity_to: "edges" #faces, faces-and-edges
+
+      },
+    }
+    
+  BL:
+    type: "smooth-transition"
+    number_of_layers: 4
+    growth_rate: 0.9
+    transition_ratio: 1.1
+  
+  face_quality_limit: 0.4
+  cell_type: "poly-hexacore" #for other types, search keywords
+
+solver:
+  gui:
+    enabled: gui.enabled
+  time:
+    time_step: 0.001
+    iterations: 100
+
+  viscous_model:
+    type: "k-epislon"
+      k_epilson: "realizable"
+    curvature_correction: true
+
+  reference_values:
+    area: ${BC.inlet.area}
+    density: ${materials.fluid.density}
+    velocity: ${BC.inlet.velocity}
+    
+  materials:
+    fluid:
+      name: "water"
+      density: 2000
+      zones:
+      
+    solid:
+      name:
+      density: 
+      zones:
+
+  BC:
+    inlet:
+      type: "velocity"
+      value: 0.1
+      area: 0.1
+      turbulence_intensity: 0.5
+      turbulence_viscosity_ratio: 0.5
+    outlet:
+      type: "pressure"
+      value: 0
+      turbulence_intensity: 0.5
+
+  initialization:
+    initialize:
+      type: "standard" # "hybrid"
+  
+  solution:
+    solution_control:
+      model: "p-v"
+    solution_method:
+      disretization: 
+        pressure: 12 #pythonic: "second-order"
+        k: 1         # pythonic:   "second-order"
+        epilson: 1   #pythonic: "second-order"
+    monitors:
+      residuals_criteria:
+        general: 0.0001
+        k: ${monitors.residuals_criteria.general}
+        epislon: ${monitors.residuals_criteria.general}
+
+        continuity: ${monitors.residuals_criteria.general}
+        x-velocity: ${monitors.residuals_criteria.general}
+        y-velocity: ${monitors.residuals_criteria.general}
+        z-velocity: ${monitors.residuals_criteria.general}
+
+      report_monitor:
+        - name: "drag"
+          parameter: ${report_definitions.quantities.drag.name}
+  
+  report_definitions:
+    quanitities:
+      drag: #parameter definition
+        name: "cd1"
+        zones:
+          - blades
+          - enc1
+        force_vector: [0, 0, 1] # (drag) force vector in [0,0,z] axis
+        report_definition: #outputted report based on this quantity
+          name: "drag"
+          param: ${report_definitions.quanities.drag.name}
+
+
+    parameter_report_definition: #param report outputted
+      reports:
+        - name: "drag"
+          param: ${report_definitions.quanities.drag.name}
+        - 
+        
+  post_process:
+    enabled: true
+    iso_surface:
+        - name: "x0"
+          field: "x-coordinate" #@x axis or "y-coordinate" or z
+          value: 0 # x =0
+        - 
+
+    contour:
+      save_format: "png"
+      - name: "velocity-mag"
+        field: "velocity-magnitude"
+        surface:
+          - "x0"
+
+  run_calc_settings:
+    iter_count: 5
+  save:
+    name: 
+
+
+    
+
+#specify if known, else leave empty
+resources:
+  cores:
+  memory:
+
+#debugging
+verbose:
+  enabled: False
+
+gui:
+  enabled: false
