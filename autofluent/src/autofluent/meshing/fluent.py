@@ -7,7 +7,7 @@ class Fluent_Mesher(Mesher):
 
     def __init__(self, session, config):
         super().__init__(session, config)
-        self.save_dir = self.config.get("save_dir", {}).get("path")\n        self.meshing_config = self.config.get("meshing", {}) or ""
+        self.save_dir = self.config.get("save_dir", {}).get("path")\n        self.meshing_config = self.config.get("meshing", {}) or {}
         self.scdoc_file_path = self.config["geometry"]["file"]
         self.file_name_noext = os.path.basename(self.scdoc_file_path)
         head, _ = os.path.split(self.scdoc_file_path)
