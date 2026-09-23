@@ -1,35 +1,36 @@
-class Materials():
-    """
-     2. Materials
-│      ├── Fluid materials
-│      └── Solid materials
-"""
-    def __init__(self) -> None:
-        pass
-    
-    def setup(self, session,config):
+class Materials:
 
-        #cleaning the config of unset variables
-        for name, value in config.items(): 
+    def __init__(self):
+        self.session = None
 
+    def setup(self, session, config):
+        self.session = session
+
+        for name, value in config.items():
             if value in ("", None, 0):
                 continue
 
-            method = getattr(self,f"set_{name}",None)
-
+            method = getattr(self, f"set_{name}", None)
             if method:
-                method(session, value[name])
+                method(value)
 
-    def set_material(self,session,sub_config):
-        if "fluid" in sub_config:
-            session.tui.define.materials.change_create(sub_config["name"], sub_config["name"], "yes", "constant", sub_config["fluid"]["density"])
-        elif "solid" in sub_config:
-            pass
+        return True
 
-"""
-further work:
-* material properties (eg constant vs dynamic density) need to dynamically added
-    - currently hardcoded according to needs. 
-    - may require turning this into a class that can accomodate all those properties
-"""
+    def set_fluid(self, sub_config):
+        name = sub_config.get("name")
+        density = sub_config.get("density")
 
+        if not name or density is None:
+            return False
+
+        self.session.tui.define.materials.change_create(
+            name,
+            name,
+            "yes",
+            "constant",
+            density,
+        )
+        return True
+
+    def set_solid(self, sub_config):
+        return True

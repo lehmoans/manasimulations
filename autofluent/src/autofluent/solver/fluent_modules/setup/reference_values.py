@@ -1,32 +1,26 @@
-class Reference_Values():
-    """
-        Reference Values
-│      └── Density, velocity, area, length, etc.
-    """
+class Reference_Values:
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self):
+        self.session = None
 
-    def setup(self, session,config):
-
+    def setup(self, session, config):
         self.session = session
-        #cleaning the config of unset variables
-        for name, value in config.items(): 
 
+        for name, value in config.items():
             if value in ("", None, 0):
                 continue
 
-            method = getattr(self,f"set_{name}",None)
-
+            method = getattr(self, f"set_{name}", None)
             if method:
-                method(self.session, value[name])
-    
-    def set_area(self,sub_config):
-        self.session.settings.setup.reference_values.area = sub_config["area"]
-   
-    def set_density(self,sub_config):
-        self.session.settings.setup.reference_values.density = sub_config["density"]
+                method(value)
 
-    def set_velocity(self, sub_config):
-        self.session.settings.setup.reference_values.velocity = sub_config["velocity"]
+        return True
 
+    def set_area(self, value):
+        self.session.settings.setup.reference_values.area = value
+
+    def set_density(self, value):
+        self.session.settings.setup.reference_values.density = value
+
+    def set_velocity(self, value):
+        self.session.settings.setup.reference_values.velocity = value
