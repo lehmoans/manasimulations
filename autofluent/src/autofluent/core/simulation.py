@@ -86,16 +86,22 @@ class AutoFluent:
                     self.session,
                     self.config.get("solver", {}),
                 )
-                self.result = self.profile.run_solver(self.solver)
+
+                context = {
+                    "profile": self.profile.name,
+                    "environment": self.environment_type,
+                }
 
                 if self.mesh_result is not None:
-                    self.result["meshing"] = {
+                    context["meshing"] = {
                         "mesh": str(self.mesh_result),
                         "workflow": self.meshing.workflow,
                     }
 
-                self.result["profile"] = self.profile.name
-                self.result["environment"] = self.environment_type
+                self.result = self.profile.run_solver(
+                    self.solver,
+                    context=context,
+                )
 
             return self.result
 
