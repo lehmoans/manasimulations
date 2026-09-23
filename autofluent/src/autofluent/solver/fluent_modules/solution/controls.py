@@ -1,26 +1,16 @@
-class Controls():
-    """
-        Solution Controls
-│      ├── Monitors
-│      ├── Convergence
-│      └── Reporting
-    """
-    def __init__(self) -> None:
-        pass
-    
-    def setup(self, session,config):
+class Controls:
+    def __init__(self):
+        self.session = None
 
+    def setup(self, session, config):
         self.session = session
-        #cleaning the config of unset variables
-        for name, value in config.items(): 
+        model = config.get("model")
+        if model:
+            self.set_model(model)
+        return True
 
-            method = getattr(self,f"set_{name}",None)
-
-            if method:
-                method(self.session, value[name])
-
-        def set_model(self,sub_config):
-            if sub_config["model"] == "p-v":
-                self.session.tui.solve.set.p_v_coupling(24) #activation of coupling same as: self.fluent.solution.methods.p_v_coupling.flow_scheme.set_state("Coupled")
-            
-            
+    def set_model(self, model):
+        if model != "p-v":
+            raise ValueError(f"Unsupported pressure-velocity coupling: {model}")
+        self.session.settings.solution.methods.p_v_coupling.flow_scheme = "coupled"
+        return True
