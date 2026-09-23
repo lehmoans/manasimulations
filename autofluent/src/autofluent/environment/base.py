@@ -1,13 +1,19 @@
 from abc import ABC, abstractmethod
 
-class Environment(ABC):
+class BaseEnvironment(ABC):
+    def __init__(self,config):
+        self.config = config
+    
+    @abstractmethod
+    def check_environment(self):
+        raise NotImplementedError
 
     @abstractmethod
     def prepare(self):
         raise NotImplementedError
 
     @abstractmethod
-    def launch(self,mode):
+    def launch_session(self,mode):
         raise NotImplementedError
 
     @abstractmethod

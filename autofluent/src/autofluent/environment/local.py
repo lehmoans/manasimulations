@@ -1,27 +1,20 @@
-from .base import Environment
+from .base import BaseEnvironment
 
 import os
 from pathlib import Path
 import ansys.fluent.core as pyfluent
 
-class Local_Environment(Environment):
+class LocalEnvironment(BaseEnvironment):
     def __init__(self, config) -> None:
         super().__init__(config)
         self.session = None
         self.workdir = None
 
+    def check_environment(self):
+        pass
+
     def prepare(self):
         pass
-    
-    def chdir_to_save_dir(self):
-        """Prepare the local working directory and environment."""
-
-        save_path = self.config["save_dir"]["path"]
-
-        self.workdir = Path(save_path).resolve()
-        self.workdir.mkdir(parents=True, exist_ok=True)
-
-        os.chdir(self.workdir)
 
     def launch_session(self,mode):
         """Launch a local Fluent session."""
@@ -41,13 +34,6 @@ class Local_Environment(Environment):
         )
 
         return self.session
-
-
-    def run(self):
-        """Prepare environment and launch Fluent."""
-
-        self.prepare()
-        return self.launch()
 
     def close(self):
         """Close the Fluent session."""

@@ -1,11 +1,11 @@
-from .base import Environment
+from .base import BaseEnvironment
 
 import os
 from pathlib import Path
 import ansys.fluent.core as pyfluent
 
 
-class HPC_Environment(Environment):
+class HpcEnvironment(BaseEnvironment):
 
     def __init__(self, config):
         super().__init__(config)
@@ -18,11 +18,36 @@ class HPC_Environment(Environment):
             "scheduler", {}
         )
 
-    def check_slurm(self):
+    def check_environment(self):
         if os.getenv("SLURM_JOB_ID") is None:
             raise RuntimeError(
                 "M3Environment must be run inside a SLURM job."
             )
+    
+    def prepare(self):
+        save_path = self.config["save_dir"]["path"]
+        self.workdir = Path(save_path).resolve()
+        self.workdir.mkdir(parents=True, exist_ok=True)
+        os.chdir(self.workdir)
+
+    def launch_session(self,mode):
+        self.check_slurm()
+        self.session = pyfluent.launch_fluent(
+            mode=mode,
+            dimension=3,
+            precision="double",
+            processor_count=self.get_cpus(),
+        )
+
+        return self.session
+
+    def close(self):
+
+        if self.session is not None:
+            self.session.exit()
+            self.session = None
+    
+    #class utilities
 
     def get_cpus(self):
         return self.resources_config.get("cpus", 1)
@@ -41,28 +66,4 @@ class HPC_Environment(Environment):
             "01:00:00"
         )
     
-    def prepare(self):
-        
-
-        save_path = self.config["save_dir"]["path"]
-        self.workdir = Path(save_path).resolve()
-        self.workdir.mkdir(parents=True, exist_ok=True)
-        os.chdir(self.workdir)
-
-    def launch(self,mode):
-        self.check_slurm()
-        self.session = pyfluent.launch_fluent(
-            mode=mode,
-            dimension=3,
-            precision="double",
-            processor_count=self.get_cpus(),
-        )
-
-        return self.session
-
-
-    def close(self):
-
-        if self.session is not None:
-            self.session.exit()
-            self.session = None
+    

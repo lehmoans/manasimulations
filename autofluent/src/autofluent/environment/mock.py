@@ -1,13 +1,16 @@
 from base import Environment
 
-class Mock_Environment(Environment):
-    def __init__(self) -> None:
-        super().__init__()
+class MockEnvironment(Environment):
+    def __init__(self,config) -> None:
+        super().__init__(config)
+    
+    def check_environment(self):
+        pass
     
     def prepare(self):
         print("MOCK ENVIRONMENT: prepare")
     
-    def launch(self, mode):
+    def launch_session(self, mode):
         print("MOCK ENVIRONMENT: session launch")
     
     def close(self):
