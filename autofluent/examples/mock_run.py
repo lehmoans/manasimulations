@@ -8,6 +8,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="autofluent_mock_") as run_dir:
         config = {
             "environment": {"type": "mock"},
+            "profile": "fixed",
             "save_dir": {"path": run_dir},
             "meshing": {
                 "enabled": True,
@@ -16,6 +17,10 @@ def main():
             "solver": {
                 "enabled": True,
                 "run_calc_settings": {"iter_count": 5},
+                "post_process": {
+                    "iso_surface": [{"name": "x0"}],
+                    "contour": [{"name": "velocity-mag"}],
+                },
                 "save": {"name": "mock_result.json"},
             },
         }
@@ -24,6 +29,7 @@ def main():
 
         print("\nMOCK RUN RESULT")
         print(result)
+        print(f"Mesh exists: {Path(run_dir, 'mock_mesh.msh').exists()}")
         print(f"Result exists: {Path(result['output']).exists()}")
 
 
