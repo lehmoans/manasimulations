@@ -7,16 +7,16 @@ class Fluent_Mesher(Mesher):
 
     def __init__(self, session, config):
         super().__init__(session, config)
-        self.save_dir = self.config.get("save_dir", {}).get("path")
+        self.save_dir = self.config.get("save_dir", {}).get("path")\n        self.meshing_config = self.config.get("meshing", {}) or ""
         self.scdoc_file_path = self.config["geometry"]["file"]
         self.file_name_noext = os.path.basename(self.scdoc_file_path)
         head, _ = os.path.split(self.scdoc_file_path)
         self.dir_name = head
         self.save_path = Path(self.save_dir) if self.save_dir else Path.cwd()
-        self.processors = self.config.get("resources", {}).get("cores") 
+        self.processors = self.config.get("environment", {}).get("resources", {}).get("cpus") 
         self.verbose = self.config["verbose"]["enabled"]
         #self.updates = Updates(self.verbose)
-        self.show_gui = self.config.get("show_gui", False)
+        self.show_gui = self.meshing_config.get("show_gui", False)
         self.session = session
 
         
