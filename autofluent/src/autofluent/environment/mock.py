@@ -1,6 +1,6 @@
-from base import Environment
+from base import BaseEnvironment
 
-class MockEnvironment(Environment):
+class MockEnvironment(BaseEnvironment):
     def __init__(self,config) -> None:
         super().__init__(config)
     

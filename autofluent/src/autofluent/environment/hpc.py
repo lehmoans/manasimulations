@@ -25,13 +25,16 @@ class HpcEnvironment(BaseEnvironment):
             )
     
     def prepare(self):
+        self.check_environment()
+
         save_path = self.config["save_dir"]["path"]
         self.workdir = Path(save_path).resolve()
         self.workdir.mkdir(parents=True, exist_ok=True)
         os.chdir(self.workdir)
 
     def launch_session(self,mode):
-        self.check_slurm()
+        self.prepare()
+        
         self.session = pyfluent.launch_fluent(
             mode=mode,
             dimension=3,
