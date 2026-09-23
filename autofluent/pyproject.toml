@@ -11,6 +11,9 @@ dependencies = [
     "pyyaml",
 ]
 
+[project.scripts]
+autofluent = "autofluent.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
