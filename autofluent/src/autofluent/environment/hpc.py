@@ -54,7 +54,6 @@ class HpcEnvironment(BaseEnvironment):
         os.chdir(self.workdir)
 
     def launch_session(self,mode):
-        self.prepare()
 
         self.session = pyfluent.launch_fluent(
             mode=mode,
