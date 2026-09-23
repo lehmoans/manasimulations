@@ -1,8 +1,7 @@
-# mock_session.py
+class MockSession:
 
-class MockSession():
-
-    def __init__(self):
+    def __init__(self, mode=None):
+        self.mode = mode
         self.closed = False
 
     def close(self):
