@@ -32,6 +32,10 @@ class MockEnvironment(BaseEnvironment):
 
         self.session = MockSession(mode=mode)
 
+        save_config = self.config.get("solver", {}).get("save", {})
+        save_name = save_config.get("name") or "mock_result.json"
+        self.session.set_output_path(self.workdir / save_name)
+
         return self.session
 
     def close(self):
