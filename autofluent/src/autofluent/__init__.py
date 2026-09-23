@@ -1,4 +1,4 @@
-# src/autofluent/__init__.py
 from .core.simulation import AutoFluent
+from .config.configuration import CaseConfigurationManager
 
-__all__ = ["AutoFluent"]
+__all__ = ["AutoFluent", "CaseConfigurationManager"]
