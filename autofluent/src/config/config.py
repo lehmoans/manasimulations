@@ -8,9 +8,11 @@ loads and cleans config data, removing unset values
 from pathlib import Path
 import yaml
 
-
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 CONFIG_DIR = PROJECT_ROOT / "config"
+
+case_file = "case.yaml"
+environment_file = "environment.yaml"
 
 data_disregarded = ("", None, 0)
 
@@ -42,16 +44,11 @@ def cleanup_config(data):
     return data
 
 
-def load_config(environment, case_file = "case.yaml", environment_str= "mock"):
+def load_config(environment):
     case_config = load_raw_yaml(case_file)
+    environment_config = load_raw_yaml(environment_file)
 
-    if environment_str == "mock":
-        environment_config = load_raw_yaml('mock.yaml')
-    elif environment =="local":
-        environment_config = load_raw_yaml('local.yaml')
-    elif environment == "m3":
-        environment_config = load_raw_yaml('m3.yaml')
-    
+    environment_config = environment_config[environment] #load only environment params
 
     config = {
         **case_config,

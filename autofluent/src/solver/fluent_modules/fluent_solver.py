@@ -1,31 +1,20 @@
-# module import
-from pathlib import Path
-import ansys.fluent.core as pyfluent
-from ansys.fluent.core import examples
-from ansys.fluent.visualization import set_config
-import ansys.fluent.visualization.pyvista as pv
-
-#utilities
-from src.config.config import load_config,cleanup_config
-
 # importing fluent classes
-from .setup.fluent_setup import Fluent_Setup
+from .setup.setup import Setup
 from .solution.solution import Solution
 from .post_process.post_process import Post_Process
 
 class fluent_solver:
     def __init__(self,session, config):
-        self.fluent_setup = Fluent_Setup
+        self.fluent_setup = Setup()
         self.solution = Solution()
         self.run_post_process= Post_Process()
         
-        self.config = load_config(config)["solver"]
+        self.config = config
         self.session = session
 
     def setup(self):
-        
         #setup
-        self.fluent_setup.setup(self.session, self.config)
+        self.setup.setup(self.session, self.config)
         self.solution.setup(self.session, self.config["solution"])
         return True
 

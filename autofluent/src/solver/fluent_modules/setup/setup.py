@@ -5,7 +5,7 @@ from .models import Models
 from .reference_values import Reference_Values
 from .zones import Zones
 
-class Fluent_Setup():
+class Setup():
     def __init__(self) -> None:
         
         self.boundary_conditions = Boundary_Conditions()
