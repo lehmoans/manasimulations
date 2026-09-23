@@ -1,16 +1,33 @@
 class FixedSimulationProfile:
     """
-    Fixed first-generation AutoFluent workflow.
+    First-generation fixed AutoFluent workflow.
 
-    The sequence is intentionally explicit so the current simulation
-    profile is predictable. Additional profiles can be introduced later
-    without changing AutoFluent's core lifecycle.
+    The order here is the contract for the initial simulation profile.
+    Future profiles can extend or replace this sequence without changing
+    AutoFluent's environment lifecycle.
     """
 
     name = "fixed"
 
     def run_meshing(self, mesher):
-        return mesher.run()
+        mesher.initialise_workflow()
+        mesher.load_geometry()
+        mesher.setup()
+        mesher.generate_mesh()
+        mesher.check_mesh()
+        return mesher.save_mesh()
 
     def run_solver(self, solver):
-        return solver.run()
+        solver.setup()
+        solver.setup_solution()
+        solver.solve()
+        solver.post_process()
+        output_path = solver.save()
+
+        return {
+            "result": {
+                **solver.result,
+                "workflow": solver.workflow,
+            },
+            "output": str(output_path),
+        }
