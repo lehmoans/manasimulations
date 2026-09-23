@@ -11,6 +11,10 @@ class BaseSolver(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def setup_solution(self):
+        raise NotImplementedError
+
+    @abstractmethod
     def solve(self):
         raise NotImplementedError
 
