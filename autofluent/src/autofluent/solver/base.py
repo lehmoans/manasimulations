@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-#creating super class for meshing, will be updated according to mock or not
+
 class BaseSolver(ABC):
 
     def __init__(self, config):
@@ -8,18 +8,20 @@ class BaseSolver(ABC):
 
     @abstractmethod
     def setup(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def solve(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def post_process(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def save(self):
-        raise NotImplemented
+        raise NotImplementedError
 
-   
+    @abstractmethod
+    def run(self):
+        raise NotImplementedError
