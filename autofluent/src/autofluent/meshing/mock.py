@@ -33,7 +33,7 @@ class Mock_Mesher(Mesher):
         return True
 
     def save_mesh(self):
-        mesh_name = self.config.get("file") or "mock_mesh.msh"
+        mesh_name = (self.config.get("meshing", {}) or {}).get("file") or "mock_mesh.msh"
         self.mesh_path = self.session.output_path.parent / mesh_name
         self.mesh_path.write_text(
             "MOCK MESH\nstatus: generated\n",
