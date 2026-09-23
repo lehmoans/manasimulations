@@ -1,4 +1,3 @@
-# utilities
 from ..config.config import load_config
 
 
@@ -9,6 +8,7 @@ class AutoFluent:
         self.environment_type = self.config["environment"]["type"]
         self.environment = None
         self.session = None
+        self.result = None
 
     def configure_environment(self):
 
@@ -36,7 +36,10 @@ class AutoFluent:
             self.environment.check_environment()
             self.environment.prepare()
 
-            if self.config["meshing"]["enabled"]:
+            meshing_enabled = self.config.get("meshing", {}).get("enabled", False)
+            solver_enabled = self.config.get("solver", {}).get("enabled", True)
+
+            if meshing_enabled:
                 self.session = self.environment.launch_session(mode="meshing")
 
                 if self.environment_type == "mock":
@@ -52,7 +55,7 @@ class AutoFluent:
                 )
                 self.meshing.run()
 
-            if self.config["solver"]["enabled"]:
+            if solver_enabled:
                 if self.session is None:
                     self.session = self.environment.launch_session(mode="solve")
 
@@ -65,9 +68,11 @@ class AutoFluent:
 
                 self.solver = self.solver_class(
                     self.session,
-                    self.config["solver"],
+                    self.config.get("solver", {}),
                 )
-                self.solver.run()
+                self.result = self.solver.run()
+
+            return self.result
 
         finally:
             self.environment.close()
