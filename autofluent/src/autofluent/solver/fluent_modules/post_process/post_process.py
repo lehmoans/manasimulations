@@ -1,26 +1,22 @@
 from .contour import Contour
 from .iso_surface import Iso_Surface
 
-class Post_Process():
-    def __init__(self) -> None:
-        pass
-    
-    def setup(self, session,config):
 
+class Post_Process:
+    def __init__(self):
+        self.session = None
+
+    def setup(self, session, config):
         self.session = session
-        #cleaning the config of unset variables
-        for name, value in config.items(): 
+        if not config.get("enabled", False):
+            return True
 
-            method = getattr(self,f"set_{name}",None)
+        iso_surfaces = config.get("iso_surfaces", {}) or {}
+        if iso_surfaces:
+            Iso_Surface(session, iso_surfaces).create()
 
-            if method:
-                method(self.session, value[name])
-    
-    def set_iso_surface(self,session,config):
-        self.iso_surface = Iso_Surface(session, config)
-        self.iso_surface.create()
-        
-    def set_contour(self,session,config):
-        self.contour = Contour(session,config)
-        self.contour.create()
-    
+        contours = config.get("contours", {}) or {}
+        if contours:
+            Contour(session, contours).create()
+
+        return True
