@@ -1,32 +1,31 @@
-class Report_Definitions():
-    def __init__(self) -> None:
-        pass
+class Report_Definitions:
+    def __init__(self):
+        self.session = None
 
-    def setup(self,session,config):
+    def setup(self, session, config):
         self.session = session
-        #cleaning the config of unset variables
-        for name, value in config.items(): 
-            method = getattr(self,f"set_{name}",None)
 
-            if method:
-                method(self.session, value[name])
-    
-    def set_report_definitions(self,sub_config):
-        #creates a quantity that is measured during calc from the defined zones/axis
-        for param in sub_config["quantities"]:
-            param_name = param["name"]
+        quantities = config.get("quantities", {}) or {}
+        for name, param in quantities.items():
+            if not param:
+                continue
+            self.session.settings.solution.report_definitions.drag[name] = {
+                "zones": param.get("zones", []),
+                "force_vector": param.get("force_vector", [0, 0, 1]),
+            }
 
-            self.session.settings.solution.report_definitions.drag[param_name] = {}
-            self.session.settings.solution.report_definitions.drag[param_name] = {
-            "zones": [param["zones"]],
-            "force_vector": param["force_vector"],
-        }
-
-        for param in sub_config["parameter_report_definition"]["reports"].values():
-            self.session.parameters.output_parameters.report_definitions.create(name=param["name"])
-            self.session.parameters.output_parameters.report_definitions["parameter-1"] = {
-            "report_definition": "cd-mon1"
-        }
-
-        
-    
+        reports = config.get("reports", {}) or {}
+        for name, report in reports.items():
+            if not report:
+                continue
+            report_name = report.get("name", name)
+            parameter = report.get("parameter")
+            if not parameter:
+                continue
+            self.session.parameters.output_parameters.report_definitions.create(
+                name=report_name
+            )
+            self.session.parameters.output_parameters.report_definitions[
+                report_name
+            ] = {"report_definition": parameter}
+        return True
