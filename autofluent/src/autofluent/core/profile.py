@@ -17,10 +17,14 @@ class FixedSimulationProfile:
         mesher.check_mesh()
         return mesher.save_mesh()
 
-    def run_solver(self, solver):
+    def run_solver(self, solver, context=None):
         solver.setup()
         solver.setup_solution()
         solver.solve()
+
+        if context:
+            solver.result.update(context)
+
         solver.post_process()
         output_path = solver.save()
 
