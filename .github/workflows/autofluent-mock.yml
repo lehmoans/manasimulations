@@ -27,7 +27,7 @@ jobs:
         run: pip install -e ./autofluent
 
       - name: Run mock tests
-        run: python -m unittest discover autofluent/tests -v
+        run: python -m unittest discover tests -v\n        working-directory: autofluent
 
       - name: Run mock example
-        run: python autofluent/examples/mock_run.py
+        run: python examples/mock_run.py\n        working-directory: autofluent
