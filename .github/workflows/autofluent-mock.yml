@@ -1,0 +1,33 @@
+name: AutoFluent Mock
+
+on:
+  push:
+    paths:
+      - "autofluent/**"
+      - ".github/workflows/autofluent-mock.yml"
+  pull_request:
+    paths:
+      - "autofluent/**"
+      - ".github/workflows/autofluent-mock.yml"
+
+jobs:
+  mock-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install AutoFluent
+        run: pip install -e ./autofluent
+
+      - name: Run mock tests
+        run: python -m unittest discover autofluent/tests -v
+
+      - name: Run mock example
+        run: python autofluent/examples/mock_run.py
