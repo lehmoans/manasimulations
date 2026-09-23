@@ -48,8 +48,6 @@ class HpcEnvironment(BaseEnvironment):
         self.check_fluent_access()
     
     def prepare(self):
-        self.check_environment()
-        
         save_path = self.config["save_dir"]["path"]
         self.workdir = Path(save_path).resolve()
         self.workdir.mkdir(parents=True, exist_ok=True)
