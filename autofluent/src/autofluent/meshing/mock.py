@@ -1,11 +1,12 @@
-from base import Mesher
+from .base import Mesher
+
 
 class Mock_Mesher(Mesher):
-    def __init__(self, session, config):
-        super().__init__(config)
-        print(f'INIT: environment = {self.config["environment"]}')
 
-    def initialise_workflow(self, config):
+    def __init__(self, session, config):
+        super().__init__(session, config)
+
+    def initialise_workflow(self):
         print("MOCK: workflow initialized")
         return True
 
@@ -27,7 +28,8 @@ class Mock_Mesher(Mesher):
 
     def save_mesh(self):
         print("MOCK: mesh saved")
-    
+        return True
+
     def run(self):
         self.initialise_workflow()
         self.load_geometry()
@@ -35,4 +37,4 @@ class Mock_Mesher(Mesher):
         self.generate_mesh()
         self.check_mesh()
         self.save_mesh()
-    
+        return True
