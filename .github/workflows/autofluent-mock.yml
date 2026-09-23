@@ -30,4 +30,4 @@ jobs:
         run: cd autofluent && python -m unittest discover tests -v
 
       - name: Run mock example
-        run: python examples/mock_run.py\n        working-directory: autofluent
+        run: cd autofluent && python examples/mock_run.py
