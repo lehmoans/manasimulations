@@ -12,6 +12,7 @@ class AutoFluent:
         self.session = None
         self.meshing = None
         self.solver = None
+        self.mesh_result = None
         self.result = None
 
     def _configure_profile(self):
@@ -75,7 +76,7 @@ class AutoFluent:
                     self.session,
                     self.config.get("meshing", {}),
                 )
-                self.profile.run_meshing(self.meshing)
+                self.mesh_result = self.profile.run_meshing(self.meshing)
 
             if solver_enabled:
                 if self.session is None:
@@ -86,6 +87,15 @@ class AutoFluent:
                     self.config.get("solver", {}),
                 )
                 self.result = self.profile.run_solver(self.solver)
+
+                if self.mesh_result is not None:
+                    self.result["meshing"] = {
+                        "mesh": str(self.mesh_result),
+                        "workflow": self.meshing.workflow,
+                    }
+
+                self.result["profile"] = self.profile.name
+                self.result["environment"] = self.environment_type
 
             return self.result
 
