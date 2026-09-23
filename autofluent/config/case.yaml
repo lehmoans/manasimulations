@@ -1,49 +1,29 @@
 # AutoFluent case configuration
-#
 # This file defines WHAT the simulation does.
-# Execution details (local/M3/mock, Fluent installation, CPUs, memory) belong
-# in environment.yaml.
-#
-# GUI convention:
-# - a mapping is a configurable section;
-# - an opened/selected section is enabled;
-# - an unopened section is written as null;
-# - an empty leaf value is null (use Fluent/default behaviour where supported).
+# Execution details belong in environment.yaml.
 
-# -----------------------------------------------------------------------------
-# Project / output
-# -----------------------------------------------------------------------------
 save_dir:
   path: null
 
-# -----------------------------------------------------------------------------
-# Geometry
-# -----------------------------------------------------------------------------
 geometry:
   file: "geom.scdC"
 
-# -----------------------------------------------------------------------------
-# Meshing
-# -----------------------------------------------------------------------------
 meshing:
-  show_gui: false
   enabled: true
-
-  # Used when meshing is disabled.
+  show_gui: false
   file: "mesh.msh"
 
-  # Boundary names / groups created in SpaceClaim.
   boundaries:
-    inlet: "inlet"
-    outlet: "outlet"
+    inlet:
+      type: "velocity-inlet"
+    outlet:
+      type: "pressure-outlet"
 
-  # Named enclosure definitions.
   enclosure:
     enc1:
       name: "enc1"
       properties: null
 
-  # Named wall groups created in SpaceClaim.
   wall_groups:
     rot_grp:
       name: "rot_group"
@@ -52,8 +32,6 @@ meshing:
     blade_group:
       name: "blades"
 
-  # Named local sizing controls. Additional sizing definitions can be added
-  # without changing the overall schema.
   local_sizing:
     facesize_blades:
       type: "Face Size"
@@ -62,7 +40,6 @@ meshing:
       face_label_list:
         - "blades"
 
-  # Global surface-mesh controls.
   surface_mesh:
     growth_rate: 1.15
     max_size: null
@@ -72,7 +49,6 @@ meshing:
     cells_per_gap: 3
     scope_proximity_to: "edges"
 
-  # Boundary-layer controls.
   boundary_layer:
     type: "smooth-transition"
     number_of_layers: 4
@@ -82,11 +58,7 @@ meshing:
   face_quality_limit: 0.4
   cell_type: "poly-hexacore"
 
-# -----------------------------------------------------------------------------
-# Solver
-# -----------------------------------------------------------------------------
 solver:
-  # Solver GUI is independent of the AutoFluent configuration GUI.
   gui:
     enabled: false
 
@@ -101,9 +73,9 @@ solver:
       curvature_correction: true
 
   reference_values:
-    area: "${BC.inlet.area}"
-    density: "${materials.fluid.density}"
-    velocity: "${BC.inlet.velocity}"
+    area: 0.1
+    density: 2000
+    velocity: 0.1
 
   materials:
     fluid:
@@ -115,16 +87,16 @@ solver:
       density: null
       zones: null
 
-  # Boundary-condition definitions.
-  # Add further named boundaries under this mapping as the model grows.
   BC:
     inlet:
+      name: "inlet"
       type: "velocity"
       value: 0.1
       area: 0.1
       turbulence_intensity: 0.5
       turbulence_viscosity_ratio: 0.5
     outlet:
+      name: "outlet"
       type: "pressure"
       value: 0
       turbulence_intensity: 0.5
@@ -139,47 +111,40 @@ solver:
     methods:
       discretization:
         pressure: "second-order"
-        k: "second-order"
-        epsilon: "second-order"
+        k: "second-order-upwind"
+        epsilon: "second-order-upwind"
 
     monitors:
       residuals:
-        general: 0.0001
-        continuity: "${monitors.residuals.general}"
-        x-velocity: "${monitors.residuals.general}"
-        y-velocity: "${monitors.residuals.general}"
-        z-velocity: "${monitors.residuals.general}"
-        k: "${monitors.residuals.general}"
-        epsilon: "${monitors.residuals.general}"
-
+        continuity: 0.0001
+        x-velocity: 0.0001
+        y-velocity: 0.0001
+        z-velocity: 0.0001
+        k: 0.0001
+        epsilon: 0.0001
       reports:
         drag:
-          parameter: "${report_definitions.quantities.drag.name}"
+          parameter: "cd1"
 
-  # Reusable report quantities and the reports generated from them.
-  report_definitions:
-    quantities:
-      drag:
-        name: "cd1"
-        zones:
-          - "blades"
-          - "enc1"
-        force_vector: [0, 0, 1]
-
-    reports:
-      drag:
-        name: "drag"
-        parameter: "${report_definitions.quantities.drag.name}"
+    report_definitions:
+      quantities:
+        cd1:
+          zones:
+            - "blades"
+            - "enc1"
+          force_vector: [0, 0, 1]
+      reports:
+        drag:
+          name: "drag"
+          parameter: "cd1"
 
   run:
     iterations: 5
 
   save:
+    enabled: true
     name: null
 
-# -----------------------------------------------------------------------------
-# Post-processing
-# -----------------------------------------------------------------------------
 post_process:
   enabled: true
 
@@ -195,8 +160,5 @@ post_process:
         - "x0"
       save_format: "png"
 
-# -----------------------------------------------------------------------------
-# Optional case-level diagnostics
-# -----------------------------------------------------------------------------
 verbose:
   enabled: false
