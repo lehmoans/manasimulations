@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
 class BaseEnvironment(ABC):
-    def __init__(self,config):
+    def __init__(self, config):
         self.config = config
-    
+
     @abstractmethod
     def check_environment(self):
         """
@@ -22,18 +22,13 @@ class BaseEnvironment(ABC):
         └── Fluent available on M3
         """
         raise NotImplementedError
-    
 
     @abstractmethod
     def prepare(self):
         raise NotImplementedError
 
     @abstractmethod
-    def launch_session(self,mode):
-        raise NotImplementedError
-
-    @abstractmethod
-    def run(self):
+    def launch_session(self, mode):
         raise NotImplementedError
 
     @abstractmethod
