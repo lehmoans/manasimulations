@@ -1,12 +1,12 @@
 from pathlib import Path
 import os
 
-from base import Mesher
+from .base import Mesher
 
 class Fluent_Mesher(Mesher):
 
-    def __init__(self, config, session):
-        super().__init__(config = config)
+    def __init__(self, session, config):
+        super().__init__(session, config)
         self.save_dir  = self.config["save_directory"]["path"]
         self.scdoc_file_path= self.config["geometry"]["file"]
         self.file_name_noext = os.path.basename(self.scdoc_file_path)
@@ -37,7 +37,7 @@ class Fluent_Mesher(Mesher):
         print("LOAD GEOMETRY: complete")
         return True
     
-    def setup(self, config):
+    def setup(self):
         self.add_local_sizings()
         self.create_surface_mesh()
         self.describe_geom()
