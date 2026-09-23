@@ -8,7 +8,6 @@ def main():
     with tempfile.TemporaryDirectory(prefix="autofluent_mock_") as run_dir:
         config = {
             "environment": {"type": "mock"},
-            "profile": "fixed",
             "save_dir": {"path": run_dir},
             "meshing": {
                 "enabled": True,
