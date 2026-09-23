@@ -1,5 +1,4 @@
 from ..config.config import load_config
-from .profile import FixedSimulationProfile
 
 
 class AutoFluent:
@@ -7,21 +6,12 @@ class AutoFluent:
     def __init__(self, config):
         self.config = load_config(config)
         self.environment_type = self.config["environment"]["type"]
-        self.profile = self._configure_profile()
         self.environment = None
         self.session = None
         self.meshing = None
         self.solver = None
         self.mesh_result = None
         self.result = None
-
-    def _configure_profile(self):
-        profile_name = self.config.get("profile", "fixed")
-
-        if profile_name == "fixed":
-            return FixedSimulationProfile()
-
-        raise ValueError(f"Unknown simulation profile: {profile_name}")
 
     def configure_environment(self):
         if self.environment_type == "mock":
@@ -76,7 +66,7 @@ class AutoFluent:
                     self.session,
                     self.config.get("meshing", {}),
                 )
-                self.mesh_result = self.profile.run_meshing(self.meshing)
+                self.mesh_result = self.meshing.run()
 
             if solver_enabled:
                 if self.session is None:
@@ -86,22 +76,7 @@ class AutoFluent:
                     self.session,
                     self.config.get("solver", {}),
                 )
-
-                context = {
-                    "profile": self.profile.name,
-                    "environment": self.environment_type,
-                }
-
-                if self.mesh_result is not None:
-                    context["meshing"] = {
-                        "mesh": str(self.mesh_result),
-                        "workflow": self.meshing.workflow,
-                    }
-
-                self.result = self.profile.run_solver(
-                    self.solver,
-                    context=context,
-                )
+                self.result = self.solver.run()
 
             return self.result
 
