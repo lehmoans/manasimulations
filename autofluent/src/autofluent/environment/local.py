@@ -2,16 +2,31 @@ from .base import BaseEnvironment
 
 import os
 from pathlib import Path
+from ansys.fluent.core.launcher.process_launch_string import get_fluent_exe_path
 import ansys.fluent.core as pyfluent
 
 class LocalEnvironment(BaseEnvironment):
-    def __init__(self, config) -> None:
+    def __init__(self, config):
         super().__init__(config)
         self.session = None
         self.workdir = None
 
     def check_environment(self):
-        pass
+
+        try:
+            fluent_exe = get_fluent_exe_path()
+
+        except Exception as exc:
+            raise RuntimeError(
+                "Unable to discover a Fluent installation."
+            ) from exc
+
+        if not fluent_exe.exists():
+            raise RuntimeError(
+                f"Fluent executable was not found: {fluent_exe}"
+            )
+
+        return True
 
     def prepare(self):
         pass

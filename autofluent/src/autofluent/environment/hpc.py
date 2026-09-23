@@ -3,6 +3,7 @@ from .base import BaseEnvironment
 import os
 from pathlib import Path
 import ansys.fluent.core as pyfluent
+from ansys.fluent.core.launcher.process_launch_string import get_fluent_exe_path
 
 
 class HpcEnvironment(BaseEnvironment):
@@ -18,15 +19,37 @@ class HpcEnvironment(BaseEnvironment):
             "scheduler", {}
         )
 
-    def check_environment(self):
+    def check_slurm(self):
         if os.getenv("SLURM_JOB_ID") is None:
             raise RuntimeError(
-                "M3Environment must be run inside a SLURM job."
+                "HpcEnvironment must be run inside a SLURM job."
             )
+    def check_fluent_access(self):
+        
+        try:
+            fluent_exe = get_fluent_exe_path()
+        except Exception as exc:
+            raise RuntimeError(
+                "Fluent could not be discovered on the HPC system."
+            ) from exc
+        
+        if not fluent_exe.exists():
+            raise RuntimeError(
+                f"Fluent executable is not accessible: {fluent_exe}"
+            )
+
+        if not os.access(fluent_exe, os.X_OK):
+            raise RuntimeError(
+                f"Fluent executable is not executable: {fluent_exe}"
+            )
+    
+    def check_environment(self):
+        self.check_slurm()
+        self.check_fluent_access()
     
     def prepare(self):
         self.check_environment()
-
+        
         save_path = self.config["save_dir"]["path"]
         self.workdir = Path(save_path).resolve()
         self.workdir.mkdir(parents=True, exist_ok=True)
@@ -34,7 +57,7 @@ class HpcEnvironment(BaseEnvironment):
 
     def launch_session(self,mode):
         self.prepare()
-        
+
         self.session = pyfluent.launch_fluent(
             mode=mode,
             dimension=3,
