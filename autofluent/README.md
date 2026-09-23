@@ -2,25 +2,23 @@
 
 AutoFluent is a config-driven framework for automating ANSYS Fluent workflows.
 
-## Current execution profile
+## Current execution lifecycle
 
-The first supported simulation profile is **fixed**.
-
-It intentionally follows one stable workflow before the framework is generalized:
+The simulation is orchestrated by `AutoFluent`. The case configuration determines which stages are enabled and how each component is configured. The environment determines where and how the simulation is executed.
 
 ```text
 AutoFluent
   -> environment check
   -> working-directory preparation
   -> session launch
-  -> meshing
+  -> meshing (if enabled)
        -> initialise workflow
        -> load geometry
        -> mesh setup
        -> generate mesh
        -> check mesh
        -> save mesh
-  -> solution setup
+  -> solution (if enabled)
        -> models
        -> materials
        -> zones
@@ -39,7 +37,7 @@ AutoFluent
   -> close environment
 ```
 
-The fixed sequence is implemented by `FixedSimulationProfile`. The profile is deliberately separate from `AutoFluent` so additional simulation profiles can be introduced later.
+There is no separate simulation-profile layer. `AutoFluent` owns the orchestration, while the meshing, solver, and post-processing implementations provide the operations. Configuration controls the case-specific behavior.
 
 ## Mock execution
 
@@ -49,8 +47,8 @@ Install the package:
 
 ```powershell
 cd autofluent
-py -3.10 -m venv .venv
-.\\.venv\\Scripts\\Activate.ps1
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -e .
 ```
 
@@ -77,7 +75,7 @@ The result JSON contains the solver result and execution workflow trace.
 
 The production `case.yaml` and `environment.yaml` architecture is intentionally not being redesigned in this stage.
 
-The mock example uses an in-memory configuration so the execution architecture can be validated independently. The YAML configuration will be finalized after the fixed execution profile is stable.
+The mock example uses an in-memory configuration so the execution architecture can be validated independently. The YAML configuration will be expanded as additional Fluent operations are added.
 
 ## Environments
 
@@ -87,4 +85,4 @@ AutoFluent currently has environment implementations for:
 - `local`
 - `m3`
 
-The mock environment is the current integration target. Local Fluent and M3 execution will be brought onto the same lifecycle after the mock profile is validated.
+The mock environment is the current integration target. Local Fluent and M3 execution will be brought onto the same lifecycle as their Fluent-specific components are completed.
