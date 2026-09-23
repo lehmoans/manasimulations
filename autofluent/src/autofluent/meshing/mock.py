@@ -5,6 +5,7 @@ class Mock_Mesher(Mesher):
 
     def __init__(self, session, config):
         super().__init__(session, config)
+        self.mesh_path = None
 
     def initialise_workflow(self):
         print("MOCK: workflow initialized")
@@ -27,8 +28,14 @@ class Mock_Mesher(Mesher):
         return True
 
     def save_mesh(self):
-        print("MOCK: mesh saved")
-        return True
+        mesh_name = self.config.get("file") or "mock_mesh.msh"
+        self.mesh_path = self.session.output_path.parent / mesh_name
+        self.mesh_path.write_text(
+            "MOCK MESH\nstatus: generated\n",
+            encoding="utf-8",
+        )
+        print(f"MOCK: mesh saved -> {self.mesh_path}")
+        return self.mesh_path
 
     def run(self):
         self.initialise_workflow()
@@ -36,5 +43,4 @@ class Mock_Mesher(Mesher):
         self.setup()
         self.generate_mesh()
         self.check_mesh()
-        self.save_mesh()
-        return True
+        return self.save_mesh()
