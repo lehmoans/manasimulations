@@ -62,7 +62,7 @@ class AutoFluent:
                 self.session = self.environment.launch_session(mode="meshing")
                 self.meshing = self._configure_mesher()(
                     self.session,
-                    self.config.get("meshing", {}),
+                    self.config,
                 )
                 self.mesh_result = self.meshing.run()
 
