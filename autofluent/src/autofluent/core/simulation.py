@@ -1,7 +1,7 @@
 #utilities
 from ..config.config import load_config
 
-class AutoFluent:
+class AutoFluent():
 
     def __init__(self, config):
         self.config = load_config(config)
