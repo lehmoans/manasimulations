@@ -1,42 +1,42 @@
-from .utilities import method_caller
-class Models():
-    """
-      Case / Model
-│      ├── General settings
-│      ├── Models
-│      └── Operating conditions
-    """
-    def __init__(self) -> None:
-        pass
+class Models:
 
-    def setup(self, session,config):
+    def __init__(self):
+        self.session = None
 
-        #cleaning the config of unset variables
-        for name, value in config.items(): 
+    def setup(self, session, config):
+        self.session = session
 
+        for name, value in config.items():
             if value in ("", None, 0):
                 continue
 
-            method = getattr(self,f"set_{name}",None)
-
+            method = getattr(self, f"set_{name}", None)
             if method:
-                method(session, value[name])
-        
-    def set_viscous_model(self,sub_config):
-        if sub_config["type"] == "k-epilson":
-            self.session.settings.setup.models.viscous.model = sub_config["type"]
-            self.session.settings.setup.models.viscous.k_epsilon_model = sub_config["k_epilson"]
-            self.session.settings.setup.models.viscous.options.curvature_correction = sub_config["curvature_correction"]
-        
-        print(f'VISCOUS MODEL: {sub_config["type"]}')
+                method(value)
 
-"""
-further work:
-*need to add other models too: k-w etc
-    - will need to convert this to classes to accomodate properties
-"""
-        
-        
-        
+        return True
 
-    
+    def set_viscous_model(self, sub_config):
+        model_type = sub_config.get("type")
+        if model_type != "k-epsilon":
+            if model_type == "k-epilson":
+                model_type = "k-epsilon"
+            else:
+                raise ValueError(f"Unsupported viscous model: {model_type}")
+
+        self.session.settings.setup.models.viscous.model = model_type
+
+        model_variant = sub_config.get("k_epsilon")
+        if model_variant is None:
+            model_variant = sub_config.get("k_epilson")
+
+        if model_variant is not None:
+            self.session.settings.setup.models.viscous.k_epsilon_model = model_variant
+
+        if "curvature_correction" in sub_config:
+            self.session.settings.setup.models.viscous.options.curvature_correction = (
+                sub_config["curvature_correction"]
+            )
+
+        print(f"VISCOUS MODEL: {model_type}")
+        return True
