@@ -4,8 +4,8 @@ from pathlib import Path
 import yaml
 
 
-PACKAGE_ROOT = Path(__file__).resolve().parents[2]
-PROJECT_ROOT = PACKAGE_ROOT.parent
+PACKAGE_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 CONFIG_DIR = PROJECT_ROOT / "config"
 SAVED_CASE_CONFIGURATIONS_DIR = PROJECT_ROOT / "saved_case_configurations"
 
@@ -13,16 +13,11 @@ SAVED_CASE_CONFIGURATIONS_DIR = PROJECT_ROOT / "saved_case_configurations"
 class CaseConfigurationManager:
     """Create, load, save, and discover reusable case configurations."""
 
-    def __init__(
-        self,
-        case_path=None,
-        saved_dir=None,
-        config_dir=None,
-    ):
+    def __init__(self, case_path=None, saved_dir=None, config_dir=None):
         self.config_dir = Path(config_dir or CONFIG_DIR)
         self.case_path = Path(case_path or self.config_dir / "case.yaml")
         self.saved_dir = Path(
-            saved_dir or PROJECT_ROOT / "saved_case_configurations"
+            saved_dir or SAVED_CASE_CONFIGURATIONS_DIR
         )
 
     def ensure_saved_directory(self):
@@ -74,10 +69,7 @@ class CaseConfigurationManager:
 
     def saved_path(self, name):
         safe_name = Path(str(name)).name
-        if safe_name.endswith(".yaml"):
-            filename = safe_name
-        else:
-            filename = f"{safe_name}.yaml"
+        filename = safe_name if safe_name.endswith(".yaml") else f"{safe_name}.yaml"
 
         if filename in {".yaml", ""}:
             raise ValueError("A non-empty case configuration name is required.")
@@ -93,13 +85,7 @@ class CaseConfigurationManager:
         )
 
     def resolve_case(self, case):
-        """Resolve a case argument to a YAML path.
-
-        Supported values:
-        - None: current config/case.yaml
-        - an existing YAML path
-        - a saved configuration name
-        """
+        """Resolve a case argument to a YAML path."""
         if case is None:
             return self.case_path
 
