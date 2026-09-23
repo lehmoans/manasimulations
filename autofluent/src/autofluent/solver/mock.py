@@ -92,10 +92,10 @@ class Mock_Solver(BaseSolver):
 
         post_process = self.config.get("post_process", {})
 
-        if post_process.get("iso_surface"):
+        if post_process.get("iso_surfaces"):
             self.post_process_iso_surfaces()
 
-        if post_process.get("contour"):
+        if post_process.get("contours"):
             self.post_process_contours()
 
         return True
