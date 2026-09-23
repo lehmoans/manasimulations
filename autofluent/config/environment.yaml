@@ -1,27 +1,33 @@
-environment: local
-
 type:
   local:
-    memory: 1
-    processor_count: 4
-
-    ansys:
+    fluent:
+      root:
       version: "252"
-      root: "C:/Program Files/ANSYS Inc/v252"
-  
-  hpc:
-    memory:
-    processor_count:
+      dimension: 3
+      precision: double
+    resources:
+      cpus: 4
+      memory: 4G
 
-    ansys:
+  m3:
+    fluent:
+      root:
       version: "252"
-      root: "/apps/ansys_inc/v252"
+      dimension: 3
+      precision: double
+    resources:
+      cpus:
+      memory:
+    scheduler:
+      partition: normal
+      walltime: "01:00:00"
 
-  
   mock:
-    memory: 1
-    processor_count: 2
-
-    ansys:
+    fluent:
+      root: mockfluent
       version: "000"
-      root: "mockfluent"
+      dimension: 3
+      precision: double
+    resources:
+      cpus: 2
+      memory: 1G
