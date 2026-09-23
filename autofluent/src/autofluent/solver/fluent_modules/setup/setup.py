@@ -7,7 +7,6 @@ from .zones import Zones
 
 
 class Setup:
-
     def __init__(self):
         self.boundary_conditions = Boundary_Conditions()
         self.initialization = Initialisation()
@@ -17,28 +16,18 @@ class Setup:
         self.zones = Zones()
 
     def setup(self, session, config):
-        viscous_config = config.get("viscous_model")
+        viscous_config = (config.get("models", {}) or {}).get("viscous")
         if viscous_config:
             self.viscous_models.setup(session, {"viscous_model": viscous_config})
 
-        materials_config = config.get("materials")
-        if materials_config:
-            self.materials.setup(session, materials_config)
-
-        zones_config = config.get("zones")
-        if zones_config:
-            self.zones.setup(session, zones_config)
-
-        reference_config = config.get("reference_values")
-        if reference_config:
-            self.reference_values.setup(session, reference_config)
-
-        boundary_config = config.get("BC")
-        if boundary_config:
-            self.boundary_conditions.setup(session, boundary_config)
-
-        initialization_config = config.get("initialization")
-        if initialization_config:
-            self.initialization.setup(session, initialization_config)
-
+        for key, component in (
+            ("materials", self.materials),
+            ("zones", self.zones),
+            ("reference_values", self.reference_values),
+            ("BC", self.boundary_conditions),
+            ("initialization", self.initialization),
+        ):
+            value = config.get(key)
+            if value:
+                component.setup(session, value)
         return True
