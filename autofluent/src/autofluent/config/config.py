@@ -1,10 +1,3 @@
-# src/fluent_automation/config/loader.py
-
-"""
-loads and cleans config data, removing unset values
-    clean_config = load_config(environment, case_file = "case.yaml", environment_str= "mock")
-"""
-
 from pathlib import Path
 import yaml
 
@@ -15,6 +8,7 @@ case_file = "case.yaml"
 environment_file = "environment.yaml"
 
 data_disregarded = ("", None, 0)
+
 
 def load_raw_yaml(filename):
     with open(CONFIG_DIR / filename, "r") as file:
@@ -28,7 +22,6 @@ def cleanup_config(data):
         for key, value in data.items():
             value = cleanup_config(value)
 
-            # Remove empty configuration values
             if value not in data_disregarded:
                 cleaned[key] = value
 
@@ -48,11 +41,16 @@ def load_config(environment):
     case_config = load_raw_yaml(case_file)
     environment_config = load_raw_yaml(environment_file)
 
-    environment_config = environment_config[environment] #load only environment params
+    # Support the current environment.yaml structure while the
+    # configuration architecture is being finalized.
+    environment_config = environment_config.get("type", {}).get(environment, {})
 
     config = {
         **case_config,
-        **environment_config
+        "environment": {
+            "type": environment,
+            **environment_config,
+        },
     }
 
     return cleanup_config(config)
