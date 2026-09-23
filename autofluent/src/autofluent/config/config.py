@@ -1,5 +1,7 @@
 from pathlib import Path
+
 import yaml
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 CONFIG_DIR = PROJECT_ROOT / "config"
@@ -38,6 +40,17 @@ def cleanup_config(data):
 
 
 def load_config(environment):
+    """
+    Load the normal YAML configuration or accept an already-built
+    configuration dictionary.
+
+    The dictionary path is intentionally supported for mock/integration
+    tests so the execution pipeline can be exercised independently of
+    the production YAML files.
+    """
+    if isinstance(environment, dict):
+        return cleanup_config(environment)
+
     case_config = load_raw_yaml(case_file)
     environment_config = load_raw_yaml(environment_file)
 
