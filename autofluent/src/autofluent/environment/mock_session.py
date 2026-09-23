@@ -10,6 +10,7 @@ class MockSession:
 
     def set_output_path(self, path):
         self.output_path = Path(path)
+        self.output_path.parent.mkdir(parents=True, exist_ok=True)
 
     def close(self):
         print("MOCK SESSION: close")
