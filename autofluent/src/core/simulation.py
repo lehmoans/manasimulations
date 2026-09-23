@@ -5,25 +5,25 @@ class AutoFluent:
 
     def __init__(self, config):
         self.config = load_config(config)
+        self.environment_type = self.config["environment"]["type"]
 
     def configure_environment(self):
-        environment_type = self.config["environment"]["type"]
 
-        if environment_type == "mock":
+        if self.environment_type == "mock":
             from ..environment.mock import Mock_Environment
             return Mock_Environment(self.config)
 
-        elif environment_type == "local":
+        elif self.environment_type == "local":
             from ..environment.local import Local_Environment
             return Local_Environment(self.config)
 
-        elif environment_type == "m3":
+        elif self.environment_type == "m3":
             from ..environment.hpc import HPC_Environment
             return HPC_Environment(self.config)
 
         else:
             raise ValueError(
-                f"Unknown environment: {environment_type}"
+                f"Unknown environment: {self.environment_type}"
             )
 
     def run(self):

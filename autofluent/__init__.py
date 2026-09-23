@@ -1,1 +1,3 @@
-from autofluent import AutoFluent
+from src.core.simulation import AutoFluent
+
+__all__ = ["AutoFluent"]

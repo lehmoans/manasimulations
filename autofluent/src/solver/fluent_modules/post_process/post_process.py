@@ -1,5 +1,5 @@
-from contour import Contour
-from iso_surface import Iso_Surface
+from .contour import Contour
+from .iso_surface import Iso_Surface
 
 class Post_Process():
     def __init__(self) -> None:

@@ -1,13 +1,13 @@
-from base import Solver
+from .base import BaseSolver
 
-from solver.fluent_modules.fluent_solver import fluent_solver
+from .fluent_modules.solver import Solver
 
-class Fluent_Solver(Solver):
+class Fluent_Solver(BaseSolver):
 
     def __init__(self, session, config):
         super().__init__(config=config)
 
-        self.fluent_solver = fluent_solver(session, config)
+        self.fluent_solver = Solver(session, config)
         
     def setup(self):
         self.setup = self.fluent_solver.setup()

@@ -1,7 +1,7 @@
-from .base import Solver
+from .base import BaseSolver
 
 
-class Mock_Solver(Solver):
+class Mock_Solver(BaseSolver):
 
     def __init__(self, config):
         super().__init__(config)

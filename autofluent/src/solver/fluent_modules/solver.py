@@ -3,7 +3,7 @@ from .setup.setup import Setup
 from .solution.solution import Solution
 from .post_process.post_process import Post_Process
 
-class fluent_solver:
+class Solver:
     def __init__(self,session, config):
         self.fluent_setup = Setup()
         self.solution = Solution()
@@ -14,7 +14,7 @@ class fluent_solver:
 
     def setup(self):
         #setup
-        self.setup.setup(self.session, self.config)
+        self.fluent_setup.setup(self.session, self.config)
         self.solution.setup(self.session, self.config["solution"])
         return True
 

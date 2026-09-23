@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 #creating super class for meshing, will be updated according to mock or not
-class Solver(ABC):
+class BaseSolver(ABC):
 
     def __init__(self, config):
         self.config = config
