@@ -15,12 +15,19 @@ def main():
             },
             "solver": {
                 "enabled": True,
-                "run_calc_settings": {"iter_count": 5},
-                "post_process": {
-                    "iso_surface": [{"name": "x0"}],
-                    "contour": [{"name": "velocity-mag"}],
-                },
+                "run": {"iterations": 5},
                 "save": {"name": "mock_result.json"},
+            },
+            "post_process": {
+                "enabled": True,
+                "iso_surfaces": {"x0": {"field": "x-coordinate", "value": 0}},
+                "contours": {
+                    "velocity_mag": {
+                        "field": "velocity-magnitude",
+                        "surfaces": ["x0"],
+                        "save_format": "png",
+                    }
+                },
             },
         }
 
