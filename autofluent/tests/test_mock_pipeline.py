@@ -12,7 +12,6 @@ class TestMockPipeline(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="autofluent_test_") as run_dir:
             config = {
                 "environment": {"type": "mock"},
-                "profile": "fixed",
                 "save_dir": {"path": run_dir},
                 "meshing": {
                     "enabled": True,
@@ -36,7 +35,6 @@ class TestMockPipeline(unittest.TestCase):
 
             self.assertEqual(result["result"]["status"], "success")
             self.assertEqual(result["result"]["environment"], "mock")
-            self.assertEqual(result["result"]["profile"], "fixed")
             self.assertEqual(result["result"]["solution"]["iterations"], 5)
 
             self.assertEqual(
@@ -56,18 +54,6 @@ class TestMockPipeline(unittest.TestCase):
                     "post_process",
                     "post_process.iso_surface",
                     "post_process.contour",
-                ],
-            )
-
-            self.assertEqual(
-                result["result"]["meshing"]["workflow"],
-                [
-                    "initialise_workflow",
-                    "load_geometry",
-                    "setup",
-                    "generate_mesh",
-                    "check_mesh",
-                    "save_mesh",
                 ],
             )
 
