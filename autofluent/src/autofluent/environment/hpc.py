@@ -1,9 +1,10 @@
-from .base import BaseEnvironment
-
 import os
 from pathlib import Path
+
 import ansys.fluent.core as pyfluent
 from ansys.fluent.core.launcher.process_launch_string import get_fluent_exe_path
+
+from .base import BaseEnvironment
 
 
 class HpcEnvironment(BaseEnvironment):
@@ -11,66 +12,60 @@ class HpcEnvironment(BaseEnvironment):
     def __init__(self, config):
         super().__init__(config)
         self.session = None
-        self.resources_config = config.get("environment", {}).get(
-            "resources", {}
-        )
+        environment = config.get("environment", {})
+        self.resources_config = environment.get("resources", {})
+        self.scheduler_config = environment.get("scheduler", {})
 
-        self.scheduler_config = config.get("environment", {}).get(
-            "scheduler", {}
-        )
+    @property
+    def environment_config(self):
+        return self.config.get("environment", {})
+
+    def fluent_root(self):
+        root = self.environment_config.get("fluent", {}).get("root")
+        if root:
+            root = Path(root).expanduser().resolve()
+            if not root.exists():
+                raise RuntimeError(f"Configured Fluent root does not exist: {root}")
+            return root
+
+        try:
+            exe = Path(get_fluent_exe_path()).resolve()
+            return exe.parent.parent.parent
+        except Exception as exc:
+            raise RuntimeError(
+                "Fluent could not be detected on the HPC system. "
+                "Specify environment.m3.fluent.root in environment.yaml."
+            ) from exc
 
     def check_slurm(self):
         if os.getenv("SLURM_JOB_ID") is None:
-            raise RuntimeError(
-                "HpcEnvironment must be run inside a SLURM job."
-            )
-    def check_fluent_access(self):
-        
-        try:
-            fluent_exe = get_fluent_exe_path()
-        except Exception as exc:
-            raise RuntimeError(
-                "Fluent could not be discovered on the HPC system."
-            ) from exc
-        
-        if not fluent_exe.exists():
-            raise RuntimeError(
-                f"Fluent executable is not accessible: {fluent_exe}"
-            )
+            raise RuntimeError("HpcEnvironment must be run inside a SLURM job.")
 
-        if not os.access(fluent_exe, os.X_OK):
-            raise RuntimeError(
-                f"Fluent executable is not executable: {fluent_exe}"
-            )
-    
     def check_environment(self):
         self.check_slurm()
-        self.check_fluent_access()
-    
+        self.fluent_root()
+        return True
+
     def prepare(self):
-        save_path = self.config["save_dir"]["path"]
-        self.workdir = Path(save_path).resolve()
+        save_path = self.config.get("save_dir", {}).get("path")
+        self.workdir = Path(save_path or Path.cwd() / "autofluent_run").resolve()
         self.workdir.mkdir(parents=True, exist_ok=True)
-        os.chdir(self.workdir)
 
-    def launch_session(self,mode):
-
+    def launch_session(self, mode):
+        fluent_config = self.environment_config.get("fluent", {})
         self.session = pyfluent.launch_fluent(
             mode=mode,
-            dimension=3,
-            precision="double",
+            dimension=fluent_config.get("dimension", 3),
+            precision=fluent_config.get("precision", "double"),
             processor_count=self.get_cpus(),
+            fluent_path=str(self.fluent_root()),
         )
-
         return self.session
 
     def close(self):
-
         if self.session is not None:
             self.session.exit()
             self.session = None
-    
-    #class utilities
 
     def get_cpus(self):
         return self.resources_config.get("cpus", 1)
@@ -79,14 +74,7 @@ class HpcEnvironment(BaseEnvironment):
         return self.resources_config.get("memory", "4G")
 
     def get_partition(self):
-        return self.scheduler_config.get(
-            "partition",
-            "normal")
+        return self.scheduler_config.get("partition", "normal")
 
     def get_walltime(self):
-        return self.scheduler_config.get(
-            "walltime",
-            "01:00:00"
-        )
-    
-    
+        return self.scheduler_config.get("walltime", "01:00:00")
