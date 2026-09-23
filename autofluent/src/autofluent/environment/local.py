@@ -29,7 +29,12 @@ class LocalEnvironment(BaseEnvironment):
         return True
 
     def prepare(self):
-        pass
+        save_path = self.config["save_dir"]["path"]
+
+        self.workdir = Path(save_path).resolve()
+        self.workdir.mkdir(parents=True, exist_ok=True)
+
+        os.chdir(self.workdir)
 
     def launch_session(self,mode):
         """Launch a local Fluent session."""

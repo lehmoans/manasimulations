@@ -27,8 +27,11 @@ class AutoFluent():
             )
 
     def run(self):
+        session = None
+        
+        # assign environment
         self.environment = self.configure_environment()
-
+        
         #environment prep
         self.environment.check_environment()
         self.environment.prepare()
@@ -47,10 +50,10 @@ class AutoFluent():
             self.meshing = self.mesher_class(session,self.config["meshing"])
 
             self.meshing.run()
-            session.close()
 
         if self.config["solver"]["enabled"]:
-            session = self.environment.launch_session(mode = "solve")
+            if not session:
+                session = self.environment.launch_session(mode = "solve")
             
             if self.environment_type == "mock":
                 from ..solver.mock import Mock_Solver
@@ -63,5 +66,7 @@ class AutoFluent():
             session,self.config["solver"])
 
             self.solver.run()
+        
+        if session:
             session.close()
     
