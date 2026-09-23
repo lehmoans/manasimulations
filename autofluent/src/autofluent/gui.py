@@ -24,6 +24,7 @@ class CaseConfigurationGUI:
         self.status = tk.StringVar(value="Ready")
         self._nodes = []
         self._data = {}
+        self._schema = {}
         self._build()
 
     def _build(self):
@@ -99,14 +100,32 @@ class CaseConfigurationGUI:
         return None
 
     def _schema_from_current(self):
-        """Use case.yaml as the GUI schema while clearing its values."""
+        """Load the case structure used to build the recursive editor."""
         data = self.manager.load_current()
         if not isinstance(data, dict) or not data:
             raise ValueError(
                 "config/case.yaml must contain a non-empty YAML mapping "
                 "before the GUI can build its configuration tree."
             )
-        return self._blank_value(data)
+        return data
+
+    @classmethod
+    def _merge_schema(cls, schema, data):
+        """Overlay values onto the case schema while retaining disabled sections."""
+        if not isinstance(schema, dict):
+            return data
+        if not isinstance(data, dict):
+            return cls._blank_value(schema)
+
+        merged = {}
+        for key, schema_value in schema.items():
+            if key not in data:
+                merged[key] = cls._blank_value(schema_value)
+            elif isinstance(schema_value, dict):
+                merged[key] = cls._merge_schema(schema_value, data[key])
+            else:
+                merged[key] = data[key]
+        return merged
 
     def _clear_form(self):
         for child in self.form.winfo_children():
@@ -280,16 +299,27 @@ class CaseConfigurationGUI:
             if node.get("parent") is None:
                 visit(node)
 
-    def set_data(self, data):
+    def set_data(self, data, schema=None, collapse=False):
         if not isinstance(data, dict):
             raise ValueError("The case configuration must contain a YAML mapping.")
 
         self._clear_form()
+        self._schema = schema or data
 
         for key, value in data.items():
             self._make_node(self.form, key, value)
 
         self._set_parent_links()
+        if collapse:
+            self._collapse_all_sections()
+
+    def _collapse_all_sections(self):
+        for node in self._nodes:
+            if node["kind"] == "section":
+                node["state"].set(False)
+                node["frame"].pack_forget()
+                row = node["frame"].master.winfo_children()[0]
+                self._update_arrow(row.winfo_children()[0], False)
 
     def refresh_saved_cases(self):
         cases = self.manager.list_saved()
@@ -298,7 +328,12 @@ class CaseConfigurationGUI:
 
     def new_case(self):
         try:
-            self.set_data(self._schema_from_current())
+            schema = self._schema_from_current()
+            self.set_data(
+                self._blank_value(schema),
+                schema=schema,
+                collapse=True,
+            )
             self.status.set(
                 "New case configuration — sections open are enabled; "
                 "closed sections are unset."
@@ -308,7 +343,9 @@ class CaseConfigurationGUI:
 
     def load_current(self):
         try:
-            self.set_data(self.manager.load_current())
+            schema = self._schema_from_current()
+            data = self.manager.load_current()
+            self.set_data(self._merge_schema(schema, data), schema=schema)
             self.status.set(f"Loaded {self.manager.case_path}")
         except Exception as exc:
             messagebox.showerror("Load error", str(exc))
@@ -323,7 +360,9 @@ class CaseConfigurationGUI:
             return
 
         try:
-            self.set_data(self.manager.load_saved(name))
+            schema = self._schema_from_current()
+            data = self.manager.load_saved(name)
+            self.set_data(self._merge_schema(schema, data), schema=schema)
             self.status.set(f"Loaded saved case: {name}")
         except Exception as exc:
             messagebox.showerror("Load error", str(exc))
