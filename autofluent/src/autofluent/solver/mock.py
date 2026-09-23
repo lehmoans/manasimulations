@@ -73,7 +73,6 @@ class Mock_Solver(BaseSolver):
             "status": "success",
             "environment": "mock",
             "session_mode": self.session.mode,
-            "profile": "fixed",
             "solution": {
                 "iterations": iterations,
                 "converged": True,
@@ -89,14 +88,15 @@ class Mock_Solver(BaseSolver):
         self._record("post_process.contour")
 
     def post_process(self):
+        self._record("post_process")
+
         post_process = self.config.get("post_process", {})
 
-        if post_process:
-            if post_process.get("iso_surface"):
-                self.post_process_iso_surfaces()
+        if post_process.get("iso_surface"):
+            self.post_process_iso_surfaces()
 
-            if post_process.get("contour"):
-                self.post_process_contours()
+        if post_process.get("contour"):
+            self.post_process_contours()
 
         return True
 
