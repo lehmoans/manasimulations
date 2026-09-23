@@ -1,44 +1,21 @@
-class Initialisation():
-    """
-        Initialization
-│      ├── Hybrid initialization
-│      └── Patch
-    """
+class Initialisation:
+    def __init__(self):
+        self.session = None
 
-    def __init__(self) -> None:
-        pass
+    def setup(self, session, config):
+        self.session = session
+        init_type = config.get("type")
+        if init_type:
+            self.set_initialize({"type": init_type})
+        return True
 
-    def setup(self,session, config):
-        self.session =session
-        self.config = config
-
-        #cleaning the config of unset variables
-        for name, value in config.items(): 
-
-            if value in ("", None, 0):
-                continue
-
-            method = getattr(self,f"set_{name}",None)
-
-            if method:
-                method(session, value[name])
-    
-    
-    def set_initialize(self,sub_config):
+    def set_initialize(self, sub_config):
         init_type = sub_config["type"]
         self.session.settings.solution.initialization.initialization_type = init_type
-
-        if  init_type == "standard":
+        if init_type == "standard":
             self.session.settings.solution.initialization.standard_initialize()
-
         elif init_type == "hybrid":
             self.session.settings.solution.initialization.hybrid_initialize()
-
-    
-
-    """
-    further work:
-    - setup for other initialization parameters
-
-    """
-            
+        else:
+            raise ValueError(f"Unsupported initialization type: {init_type}")
+        return True
