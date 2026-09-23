@@ -36,17 +36,10 @@ class Mock_Solver(BaseSolver):
         return True
 
     def save(self):
-        save_config = self.config.get("save", {})
-        save_name = save_config.get("name") or "mock_result.json"
-
-        # The mock session does not need Fluent's file API, so write a
-        # portable result artifact directly.
-        output_path = self.session.output_path or Path(save_name)
-
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path = self.session.output_path
 
         with output_path.open("w", encoding="utf-8") as file:
-            json.dump(self.result or {"status": "success"}, file, indent=2)
+            json.dump(self.result, file, indent=2)
 
         print(f"MOCK SAVE: {output_path}")
         return output_path
