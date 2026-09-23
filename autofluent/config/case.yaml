@@ -1,103 +1,122 @@
+# AutoFluent case configuration
+#
+# This file defines WHAT the simulation does.
+# Execution details (local/M3/mock, Fluent installation, CPUs, memory) belong
+# in environment.yaml.
+#
+# GUI convention:
+# - a mapping is a configurable section;
+# - an opened/selected section is enabled;
+# - an unopened section is written as null;
+# - an empty leaf value is null (use Fluent/default behaviour where supported).
+
+# -----------------------------------------------------------------------------
+# Project / output
+# -----------------------------------------------------------------------------
 save_dir:
-  path:
+  path: null
 
+# -----------------------------------------------------------------------------
+# Geometry
+# -----------------------------------------------------------------------------
 geometry:
-  file: "geom.scdc"
+  file: "geom.scdC"
 
+# -----------------------------------------------------------------------------
+# Meshing
+# -----------------------------------------------------------------------------
 meshing:
   show_gui: false
   enabled: true
 
-  file: "mesh.msh" #  specify if mesh disabled
+  # Used when meshing is disabled.
+  file: "mesh.msh"
 
-  #groups set in spaceclaim
-  inlet_name: "inlet"
-  
-  outlet_name: "outlet"
+  # Boundary names / groups created in SpaceClaim.
+  boundaries:
+    inlet: "inlet"
+    outlet: "outlet"
 
+  # Named enclosure definitions.
   enclosure:
-    {
-      enc1:
-        name: "enc1",
-        properties:
-    }
-  
+    enc1:
+      name: "enc1"
+      properties: null
+
+  # Named wall groups created in SpaceClaim.
   wall_groups:
-      {
-        rot_grp:
-          name_str:"rot_group",
-        stat_grp:
-          name_str:"stat_group",
-        blade_group:
-          name_str: "blades",
-      }
-    
+    rot_grp:
+      name: "rot_group"
+    stat_grp:
+      name: "stat_group"
+    blade_group:
+      name: "blades"
 
-  #local sizing
-  #face sizing:
+  # Named local sizing controls. Additional sizing definitions can be added
+  # without changing the overall schema.
   local_sizing:
-    {
-      {
-        name: "facesize_blades"
-        type: "Face Size" 
-        growth_rate: 1.15
-        target_mesh_size: None
-        face_label_list: wall_groups.blade_group
-    },
+    facesize_blades:
+      type: "Face Size"
+      growth_rate: 1.15
+      target_mesh_size: null
+      face_label_list:
+        - "blades"
 
-    }
-
+  # Global surface-mesh controls.
   surface_mesh:
-    {
-      {
-        growth_rate: 1.15
-        max_size:
-        min_size:
-        size_functions: "Curvature" #Curvature & Proximity, Curvature, Proximity
-        curvature_normal_angle: 0
-        cells_per_gap: 3
-        scope_proximity_to: "edges" #faces, faces-and-edges
+    growth_rate: 1.15
+    max_size: null
+    min_size: null
+    size_functions: "Curvature"
+    curvature_normal_angle: null
+    cells_per_gap: 3
+    scope_proximity_to: "edges"
 
-      },
-    }
-    
-  BL:
+  # Boundary-layer controls.
+  boundary_layer:
     type: "smooth-transition"
     number_of_layers: 4
     growth_rate: 0.9
     transition_ratio: 1.1
-  
-  face_quality_limit: 0.4
-  cell_type: "poly-hexacore" #for other types, search keywords
 
+  face_quality_limit: 0.4
+  cell_type: "poly-hexacore"
+
+# -----------------------------------------------------------------------------
+# Solver
+# -----------------------------------------------------------------------------
 solver:
+  # Solver GUI is independent of the AutoFluent configuration GUI.
   gui:
-    enabled: gui.enabled
+    enabled: false
+
   time:
     time_step: 0.001
     iterations: 100
 
-  viscous_model:
-    type: "k-epislon"
-      k_epilson: "realizable"
-    curvature_correction: true
+  models:
+    viscous:
+      model: "k-epsilon"
+      formulation: "realizable"
+      curvature_correction: true
 
   reference_values:
-    area: ${BC.inlet.area}
-    density: ${materials.fluid.density}
-    velocity: ${BC.inlet.velocity}
-    
+    area: "${BC.inlet.area}"
+    density: "${materials.fluid.density}"
+    velocity: "${BC.inlet.velocity}"
+
   materials:
     fluid:
       name: "water"
       density: 2000
-      zones:
-      
+      zones: null
     solid:
-      name:
-      density: 
-      zones:
+      name: null
+      density: null
+      zones: null
 
+  # Boundary-condition definitions.
+  # Add further named boundaries under this mapping as the model grows.
   BC:
     inlet:
       type: "velocity"
@@ -111,82 +130,73 @@ solver:
       turbulence_intensity: 0.5
 
   initialization:
-    initialize:
-      type: "standard" # "hybrid"
-  
+    type: "standard"
+
   solution:
-    solution_control:
+    control:
       model: "p-v"
-    solution_method:
-      disretization: 
-        pressure: 12 #pythonic: "second-order"
-        k: 1         # pythonic:   "second-order"
-        epilson: 1   #pythonic: "second-order"
+
+    methods:
+      discretization:
+        pressure: "second-order"
+        k: "second-order"
+        epsilon: "second-order"
+
     monitors:
-      residuals_criteria:
+      residuals:
         general: 0.0001
-        k: ${monitors.residuals_criteria.general}
-        epislon: ${monitors.residuals_criteria.general}
+        continuity: "${monitors.residuals.general}"
+        x-velocity: "${monitors.residuals.general}"
+        y-velocity: "${monitors.residuals.general}"
+        z-velocity: "${monitors.residuals.general}"
+        k: "${monitors.residuals.general}"
+        epsilon: "${monitors.residuals.general}"
 
-        continuity: ${monitors.residuals_criteria.general}
-        x-velocity: ${monitors.residuals_criteria.general}
-        y-velocity: ${monitors.residuals_criteria.general}
-        z-velocity: ${monitors.residuals_criteria.general}
+      reports:
+        drag:
+          parameter: "${report_definitions.quantities.drag.name}"
 
-      report_monitor:
-        - name: "drag"
-          parameter: ${report_definitions.quantities.drag.name}
-  
+  # Reusable report quantities and the reports generated from them.
   report_definitions:
-    quanitities:
-      drag: #parameter definition
+    quantities:
+      drag:
         name: "cd1"
         zones:
-          - blades
-          - enc1
-        force_vector: [0, 0, 1] # (drag) force vector in [0,0,z] axis
-        report_definition: #outputted report based on this quantity
-          name: "drag"
-          param: ${report_definitions.quanities.drag.name}
+          - "blades"
+          - "enc1"
+        force_vector: [0, 0, 1]
 
+    reports:
+      drag:
+        name: "drag"
+        parameter: "${report_definitions.quantities.drag.name}"
 
-    parameter_report_definition: #param report outputted
-      reports:
-        - name: "drag"
-          param: ${report_definitions.quanities.drag.name}
-        - 
-        
-  post_process:
-    enabled: true
-    iso_surface:
-        - name: "x0"
-          field: "x-coordinate" #@x axis or "y-coordinate" or z
-          value: 0 # x =0
-        - 
+  run:
+    iterations: 5
 
-    contour:
-      save_format: "png"
-      - name: "velocity-mag"
-        field: "velocity-magnitude"
-        surface:
-          - "x0"
-
-  run_calc_settings:
-    iter_count: 5
   save:
-    name: 
+    name: null
 
+# -----------------------------------------------------------------------------
+# Post-processing
+# -----------------------------------------------------------------------------
+post_process:
+  enabled: true
 
-    
+  iso_surfaces:
+    x0:
+      field: "x-coordinate"
+      value: 0
 
-#specify if known, else leave empty
-resources:
-  cores:
-  memory:
+  contours:
+    velocity_mag:
+      field: "velocity-magnitude"
+      surfaces:
+        - "x0"
+      save_format: "png"
 
-#debugging
+# -----------------------------------------------------------------------------
+# Optional case-level diagnostics
+# -----------------------------------------------------------------------------
 verbose:
-  enabled: False
-
-gui:
   enabled: false
