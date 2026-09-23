@@ -7,16 +7,16 @@ class Fluent_Mesher(Mesher):
 
     def __init__(self, session, config):
         super().__init__(session, config)
-        self.save_dir  = self.config["save_directory"]["path"]
-        self.scdoc_file_path= self.config["geometry"]["file"]
+        self.save_dir = self.config.get("save_dir", {}).get("path")
+        self.scdoc_file_path = self.config["geometry"]["file"]
         self.file_name_noext = os.path.basename(self.scdoc_file_path)
         head, _ = os.path.split(self.scdoc_file_path)
         self.dir_name = head
-        self.save_path = Path(self.save_dir)
-        self.processors = self.config["resoruces"]["cores"] 
+        self.save_path = Path(self.save_dir) if self.save_dir else Path.cwd()
+        self.processors = self.config.get("resources", {}).get("cores") 
         self.verbose = self.config["verbose"]["enabled"]
         #self.updates = Updates(self.verbose)
-        self.show_gui = self.config["meshing"]["show_gui"]
+        self.show_gui = self.config.get("show_gui", False)
         self.session = session
 
         
@@ -197,7 +197,7 @@ class Fluent_Mesher(Mesher):
     def add_BL(self):
         # Add Boundary Layers
 
-        BL_params = self.config["meshing"]["BL"]
+        BL_params = self.config.get("boundary_layer", {})
         self.add_boundary_layers = self.workflow.TaskObject["Add Boundary Layers"]
         self.add_boundary_layers.AddChildToTask()
         self.add_boundary_layers.InsertCompoundChildTask()
@@ -205,7 +205,7 @@ class Fluent_Mesher(Mesher):
             {
                 "BLControlName": "smooth-transition_1",
                 "NumberOfLayers": BL_params["number_of_layers"],
-                "Rate": BL_params["number_of_layers"],
+                "Rate": BL_params["growth_rate"],
                 "TransitionRatio": BL_params["transition_ratio"],
             }
         )
@@ -219,7 +219,7 @@ class Fluent_Mesher(Mesher):
     # Generate the Volume Mesh
     
         self.generate_volume_mesh = self.workflow.TaskObject["Generate the Volume Mesh"]
-        self.generate_volume_mesh.Arguments.update_dict({"VolumeFill": f"{self.config['meshing']['cell-type']}"})
+        self.generate_volume_mesh.Arguments.update_dict({"VolumeFill": f"{self.config.get("cell_type")}"})
         self.generate_volume_mesh.Execute()
         
         print("GENERATE MESH: complete")
