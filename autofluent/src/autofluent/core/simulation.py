@@ -1,11 +1,14 @@
-#utilities
+# utilities
 from ..config.config import load_config
 
-class AutoFluent():
+
+class AutoFluent:
 
     def __init__(self, config):
         self.config = load_config(config)
         self.environment_type = self.config["environment"]["type"]
+        self.environment = None
+        self.session = None
 
     def configure_environment(self):
 
@@ -27,46 +30,45 @@ class AutoFluent():
             )
 
     def run(self):
-        session = None
-        
-        # assign environment
         self.environment = self.configure_environment()
-        
-        #environment prep
-        self.environment.check_environment()
-        self.environment.prepare()
-            
-        #meshing
-        if self.config["meshing"]["enabled"]:
-            session = self.environment.launch_session(mode = "meshing")
 
-            if self.environment_type == "mock":
-                from ..meshing.mock import Mock_Mesher
-                self.mesher_class = Mock_Mesher
-            else:
-                from ..meshing.fluent import Fluent_Mesher
-                self.mesher_class = Fluent_Mesher
+        try:
+            self.environment.check_environment()
+            self.environment.prepare()
 
-            self.meshing = self.mesher_class(session,self.config["meshing"])
+            if self.config["meshing"]["enabled"]:
+                self.session = self.environment.launch_session(mode="meshing")
 
-            self.meshing.run()
+                if self.environment_type == "mock":
+                    from ..meshing.mock import Mock_Mesher
+                    self.mesher_class = Mock_Mesher
+                else:
+                    from ..meshing.fluent import Fluent_Mesher
+                    self.mesher_class = Fluent_Mesher
 
-        if self.config["solver"]["enabled"]:
-            if not session:
-                session = self.environment.launch_session(mode = "solve")
-            
-            if self.environment_type == "mock":
-                from ..solver.mock import Mock_Solver
-                self.solver_class = Mock_Solver
-            else:
-                from ..solver.fluent import Fluent_Solver
-                self.solver_class = Fluent_Solver
+                self.meshing = self.mesher_class(
+                    self.session,
+                    self.config["meshing"],
+                )
+                self.meshing.run()
 
-            self.solver = self.solver_class(
-            session,self.config["solver"])
+            if self.config["solver"]["enabled"]:
+                if self.session is None:
+                    self.session = self.environment.launch_session(mode="solve")
 
-            self.solver.run()
-        
-        if session:
-            session.close()
-    
+                if self.environment_type == "mock":
+                    from ..solver.mock import Mock_Solver
+                    self.solver_class = Mock_Solver
+                else:
+                    from ..solver.fluent import Fluent_Solver
+                    self.solver_class = Fluent_Solver
+
+                self.solver = self.solver_class(
+                    self.session,
+                    self.config["solver"],
+                )
+                self.solver.run()
+
+        finally:
+            self.environment.close()
+            self.session = None
