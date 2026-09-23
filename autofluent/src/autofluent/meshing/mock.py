@@ -42,3 +42,11 @@ class Mock_Mesher(Mesher):
         self._record("save_mesh")
         print(f"MOCK MESH: artifact -> {self.mesh_path}")
         return self.mesh_path
+
+    def run(self):
+        self.initialise_workflow()
+        self.load_geometry()
+        self.setup()
+        self.generate_mesh()
+        self.check_mesh()
+        return self.save_mesh()
